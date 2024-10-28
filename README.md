@@ -1,6 +1,7 @@
 # add symlink to user bin
 ```sh
-for script in /opt/bin/*.sh; do ln -s "$script" "/usr/bin/$(basename "$script" .sh)"; done
+sudo find /opt/bin -name '*.sh' -exec sh -c 'ln -s "$1" "/usr/bin/$(basename "$1" .sh)"' _ {} \; #symlink
+sudo chmod +x /opt/bin/*.sh # add permissions
 ```
 
 # help
