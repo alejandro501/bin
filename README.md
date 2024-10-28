@@ -1,3 +1,8 @@
+# add symlink to user bin
+```sh
+for script in /opt/bin/*.sh; do ln -s "$script" "/usr/bin/$(basename "$script" .sh)"; done
+```
+
 # help
 
 ## color me 
@@ -7,19 +12,29 @@ Available colors: black 0;30 red 0;31 green 0;32 yellow 0;33 blue 0;34 magenta 0
 
 ```
 
+## enumerate subdomains 
+```sh
+Usage: ./enumerate_subdomains.sh [OPTIONS] -I <input_file>
+
+    Options:
+    -I, --input <file>      Specify input file (mandatory, eg. wildcards).
+    -O, --output <file>     Specify output file for results (default: subdomains).
+    -H, --help              Display this help message.
+```
+
 ## generate dork links
 ```sh
 Usage: ./generate_dork_links.sh [OPTIONS] <keyword>
 
     Options:
-    -gH, --github                Generate GitHub dork links.
-    -gG, --google                Generate Google dork links.
-    -A, --all                    Generate both GitHub and Google dork links.
+    -gH,  --github                  Generate GitHub dork links.
+    -gG,  --google                  Generate Google dork links.
+    -A,   --all                     Generate both GitHub and Google dork links.
     -wGh, --wordlist-github <file>  Specify GitHub wordlist file.
-    -wGg, --wordlist-google <file>   Specify Google wordlist file.
-    -oGh, --output-github <file>     Specify output file for GitHub links.
-    -oGg, --output-google <file>      Specify output file for Google links.
-    -h, --help                   Display this help message.
+    -wGg, --wordlist-google <file>  Specify Google wordlist file.
+    -oGh, --output-github <file>    Specify output file for GitHub links.
+    -oGg, --output-google <file>    Specify output file for Google links.
+    -H,   --help                    Display this help message.
 ```
 
 ## message discord

@@ -10,20 +10,18 @@ DORKING=${DORKING:-"$TARGET/dorking"}
 WORDLIST_GITHUB_DEFAULT=~/hack/resources/wordlists/dorking-github.txt
 WORDLIST_GOOGLE_DEFAULT=~/hack/resources/wordlists/dorking-google.txt
 
-# Create dorking directory
 mkdir -p "$DORKING"
 
 # Function to check if a file exists and create it if not
 is_output_file_missing() {
     if [ -f "$1" ]; then
-        echo "" > "$1"  # Clear existing file
+        echo "" > "$1" 
         return 1
     else
         return 0
     fi
 }
 
-# Function to write dork links to file
 write_links() {
     local keyword=$1
     local wordlist_file=$2
@@ -43,19 +41,18 @@ write_links() {
     fi
 }
 
-# Help message
 usage() {
     echo "Usage: $0 [OPTIONS] <keyword>"
     echo "
     Options:
-    -gH, --github                Generate GitHub dork links.
-    -gG, --google                Generate Google dork links.
-    -A, --all                    Generate both GitHub and Google dork links.
+    -gH,  --github                  Generate GitHub dork links.
+    -gG,  --google                  Generate Google dork links.
+    -A,   --all                     Generate both GitHub and Google dork links.
     -wGh, --wordlist-github <file>  Specify GitHub wordlist file.
-    -wGg, --wordlist-google <file>   Specify Google wordlist file.
-    -oGh, --output-github <file>     Specify output file for GitHub links.
-    -oGg, --output-google <file>      Specify output file for Google links.
-    -h, --help                   Display this help message.
+    -wGg, --wordlist-google <file>  Specify Google wordlist file.
+    -oGh, --output-github <file>    Specify output file for GitHub links.
+    -oGg, --output-google <file>    Specify output file for Google links.
+    -H,   --help                    Display this help message.
     "
 }
 
@@ -76,7 +73,7 @@ main() {
             -wGg|--wordlist-google) wordlist_google="$2"; shift ;;
             -oGh|--output-github) output_github="$2"; shift ;;
             -oGg|--output-google) output_google="$2"; shift ;;
-            -h|--help) usage; exit 0 ;;
+            -H|--help) usage; exit 0 ;;
             *) keyword="$1" ;;
         esac
         shift
