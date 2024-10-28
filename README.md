@@ -31,3 +31,10 @@ Options:
   -h, --help      Show this help message
 ```
 
+## sort domains by http status
+```sh
+Usage: ./sort_http.sh -I <input_file> [-O <prepend>]
+  -I, --input    Input file containing subdomains (required)
+  -O, --output   Optional prepend for output files (default: none)
+  -h, --help     Display this help message
+```
