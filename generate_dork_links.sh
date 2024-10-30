@@ -7,12 +7,13 @@ declare -A GOOGLE=(["start"]="https://www.google.com/search?q=%22" ["end"]="&num
 # Default directories and wordlists
 TARGET=${TARGET:-$(pwd)}
 DORKING=${DORKING:-"$TARGET/dorking"}
-WORDLIST_GITHUB_DEFAULT=~/hack/resources/wordlists/dorking-github.txt
-WORDLIST_GOOGLE_DEFAULT=~/hack/resources/wordlists/dorking-google.txt
+WORDLIST_GITHUB_DEFAULT=~/hack/resources/wordlists/dorking/dorking-github.txt
+WORDLIST_GOOGLE_DEFAULT=~/hack/resources/wordlists/dorking/dorking-google.txt
+WORDLIST_API_GITHUB_DEFAULT=~/hack/resources/wordlists/dorking/api-dorking-github.txt
+WORDLIST_API_GOOGLE_DEFAULT=~/hack/resources/wordlists/dorking/api-dorking-google.txt
 
 mkdir -p "$DORKING"
 
-# Function to check if a file exists and create it if not
 is_output_file_missing() {
     if [ -f "$1" ]; then
         echo "" > "$1" 
@@ -48,6 +49,7 @@ usage() {
     -gH,  --github                  Generate GitHub dork links.
     -gG,  --google                  Generate Google dork links.
     -A,   --all                     Generate both GitHub and Google dork links.
+    -aP,  --api                     Use API-specific wordlists.
     -wGh, --wordlist-github <file>  Specify GitHub wordlist file.
     -wGg, --wordlist-google <file>  Specify Google wordlist file.
     -oGh, --output-github <file>    Specify output file for GitHub links.
@@ -63,12 +65,14 @@ main() {
     local wordlist_google="$WORDLIST_GOOGLE_DEFAULT"
     local output_github="$DORKING/github_dork_links.txt"
     local output_google="$DORKING/google_dork_links.txt"
+    local use_api_wordlists=false
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
             -gH|--github) dork_type="github" ;;
             -gG|--google) dork_type="google" ;;
             -A|--all) dork_type="all" ;;
+            -aP|--api) use_api_wordlists=true ;;
             -wGh|--wordlist-github) wordlist_github="$2"; shift ;;
             -wGg|--wordlist-google) wordlist_google="$2"; shift ;;
             -oGh|--output-github) output_github="$2"; shift ;;
@@ -83,6 +87,12 @@ main() {
         echo "Error: No keyword provided."
         usage
         exit 1
+    fi
+
+    # Use API wordlists if the API flag is set
+    if [ "$use_api_wordlists" = true ]; then
+        wordlist_github="$WORDLIST_API_GITHUB_DEFAULT"
+        wordlist_google="$WORDLIST_API_GOOGLE_DEFAULT"
     fi
 
     if [ "$dork_type" == "github" ] || [ "$dork_type" == "all" ]; then
