@@ -54,6 +54,7 @@ usage() {
     -wGg, --wordlist-google <file>  Specify Google wordlist file.
     -oGh, --output-github <file>    Specify output file for GitHub links.
     -oGg, --output-google <file>    Specify output file for Google links.
+    -O,   --output <word>           Prepend a word to the output filenames.
     -H,   --help                    Display this help message.
     "
 }
@@ -66,6 +67,7 @@ main() {
     local output_github="$DORKING/github_dork_links.txt"
     local output_google="$DORKING/google_dork_links.txt"
     local use_api_wordlists=false
+    local output_prefix=""
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
@@ -77,6 +79,7 @@ main() {
             -wGg|--wordlist-google) wordlist_google="$2"; shift ;;
             -oGh|--output-github) output_github="$2"; shift ;;
             -oGg|--output-google) output_google="$2"; shift ;;
+            -O|--output) output_prefix="$2"; shift ;;
             -H|--help) usage; exit 0 ;;
             *) keyword="$1" ;;
         esac
@@ -93,6 +96,12 @@ main() {
     if [ "$use_api_wordlists" = true ]; then
         wordlist_github="$WORDLIST_API_GITHUB_DEFAULT"
         wordlist_google="$WORDLIST_API_GOOGLE_DEFAULT"
+    fi
+
+    # Prepend the output prefix to the filenames if set
+    if [ -n "$output_prefix" ]; then
+        output_github="$DORKING/${output_prefix}_github_dork_links.txt"
+        output_google="$DORKING/${output_prefix}_google_dork_links.txt"
     fi
 
     if [ "$dork_type" == "github" ] || [ "$dork_type" == "all" ]; then
