@@ -25,16 +25,28 @@ Usage: ./enumerate_subdomains.sh [OPTIONS] -I <input_file>
 
 ## generate dork links
 ```sh
-Usage: ./generate_dork_links.sh [OPTIONS] <keyword>
+Usage: /usr/bin/generate_dork_links [OPTIONS]
 
-    Options:
+    Input Feed:
+    -oR,  --organization <org>      Specify a single organization.
+    -L,   --list <file>             Specify a file with a list of organizations.
+
+    Output:
+    -O,   --output <word>           Prepend a word to the output filenames.
+    -oGh, --output-github <file>    Specify output file for GitHub links.
+    -oGg, --output-google <file>    Specify output file for Google links.
+
+    Dorking types:
     -gH,  --github                  Generate GitHub dork links.
     -gG,  --google                  Generate Google dork links.
     -A,   --all                     Generate both GitHub and Google dork links.
+    -aP,  --api                     Use API-specific wordlists.
+
+    Custom Wordlist:
     -wGh, --wordlist-github <file>  Specify GitHub wordlist file.
     -wGg, --wordlist-google <file>  Specify Google wordlist file.
-    -oGh, --output-github <file>    Specify output file for GitHub links.
-    -oGg, --output-google <file>    Specify output file for Google links.
+
+    Help:
     -H,   --help                    Display this help message.
 ```
 

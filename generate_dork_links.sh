@@ -28,14 +28,15 @@ write_links() {
     local wordlist_file=$2
     local output_file=$3
     local dork_type=$4
+    local org_name=$5
 
     if is_output_file_missing "$output_file"; then
         while read -r line; do
             local dork_url
             if [ "$dork_type" == "github" ]; then
-                dork_url="${GITHUB[start]}${keyword}%22+${line}${GITHUB[end]}"
+                dork_url="${GITHUB[start]}${keyword}%22+${line}+org:${org_name}${GITHUB[end]}"
             else
-                dork_url="${GOOGLE[start]}${keyword}%22+${line}${GOOGLE[end]}"
+                dork_url="${GOOGLE[start]}${keyword}%22+${line}+site:${org_name}${GOOGLE[end]}"
             fi
             echo "$dork_url" >> "$output_file"
         done < "$wordlist_file"
@@ -43,31 +44,39 @@ write_links() {
 }
 
 usage() {
-    echo "Usage: $0 [OPTIONS] <keyword>"
+    echo "Usage: $0 [OPTIONS]"
     echo "
-    Options:
+    Input Feed:
+    -oR,  --organization <org>      Specify a single organization.
+    -L,   --list <file>             Specify a file with a list of organizations.
+
+    Output:
+    -O,   --output <word>           Prepend a word to the output filenames.
+    -oGh, --output-github <file>    Specify output file for GitHub links.
+    -oGg, --output-google <file>    Specify output file for Google links.
+
+    Dorking types:
     -gH,  --github                  Generate GitHub dork links.
     -gG,  --google                  Generate Google dork links.
     -A,   --all                     Generate both GitHub and Google dork links.
     -aP,  --api                     Use API-specific wordlists.
+
+    Custom Wordlist:
     -wGh, --wordlist-github <file>  Specify GitHub wordlist file.
     -wGg, --wordlist-google <file>  Specify Google wordlist file.
-    -oGh, --output-github <file>    Specify output file for GitHub links.
-    -oGg, --output-google <file>    Specify output file for Google links.
-    -O,   --output <word>           Prepend a word to the output filenames.
+
+    Help:
     -H,   --help                    Display this help message.
     "
 }
 
 main() {
     local dork_type="all"  # Default to generating both dork types
-    local keyword=""
     local wordlist_github="$WORDLIST_GITHUB_DEFAULT"
     local wordlist_google="$WORDLIST_GOOGLE_DEFAULT"
-    local output_github="$DORKING/github_dork_links.txt"
-    local output_google="$DORKING/google_dork_links.txt"
     local use_api_wordlists=false
     local output_prefix=""
+    local org_name=""
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
@@ -80,14 +89,17 @@ main() {
             -oGh|--output-github) output_github="$2"; shift ;;
             -oGg|--output-google) output_google="$2"; shift ;;
             -O|--output) output_prefix="$2"; shift ;;
+            -oR|--organization) org_name="$2"; shift ;;
+            -L|--list) org_name="$2"; shift ;;
             -H|--help) usage; exit 0 ;;
-            *) keyword="$1" ;;
+            *) echo "Error: Unrecognized option $1"; usage; exit 1 ;;
         esac
         shift
     done
 
-    if [ -z "$keyword" ]; then
-        echo "Error: No keyword provided."
+    # Ensure either an organization or a list is provided
+    if [ -z "$org_name" ]; then
+        echo "Error: No organization or list provided."
         usage
         exit 1
     fi
@@ -98,17 +110,24 @@ main() {
         wordlist_google="$WORDLIST_API_GOOGLE_DEFAULT"
     fi
 
-    # Prepend the output prefix to the filenames if set
+    # Determine output filenames based on organization name or prefix
     if [ -n "$output_prefix" ]; then
-        output_github="$DORKING/${output_prefix}_github_dork_links.txt"
-        output_google="$DORKING/${output_prefix}_google_dork_links.txt"
+        output_github="$DORKING/${output_prefix}_${org_name}_github_dork_links.txt"
+        output_google="$DORKING/${output_prefix}_${org_name}_google_dork_links.txt"
+    else
+        output_github="$DORKING/${org_name}_github_dork_links.txt"
+        output_google="$DORKING/${org_name}_google_dork_links.txt"
     fi
 
-    if [ "$dork_type" == "github" ] || [ "$dork_type" == "all" ]; then
-        write_links "$keyword" "$wordlist_github" "$output_github" "github"
-    fi
-    if [ "$dork_type" == "google" ] || [ "$dork_type" == "all" ]; then
-        write_links "$keyword" "$wordlist_google" "$output_google" "google"
+    # Check if org_name is a file or a single organization
+    if [[ -f "$org_name" ]]; then
+        while read -r org; do
+            write_links "wildcards" "$wordlist_github" "$DORKING/${org}_github_dork_links.txt" "github" "$org"
+            write_links "wildcards" "$wordlist_google" "$DORKING/${org}_google_dork_links.txt" "google" "$org"
+        done < "$org_name"
+    else
+        write_links "wildcards" "$wordlist_github" "$output_github" "github" "$org_name"
+        write_links "wildcards" "$wordlist_google" "$output_google" "google" "$org_name"
     fi
 }
 
