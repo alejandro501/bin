@@ -17,6 +17,19 @@ WORDLIST_API_SHODAN_DEFAULT=~/hack/resources/wordlists/dorking/api-shodan.txt
 
 mkdir -p "$DORKING"
 
+urlencode() {
+    local input="$1"
+    local encoded=""
+    for ((i=0; i<${#input}; i++)); do
+        char="${input:$i:1}"
+        case "$char" in
+            [a-zA-Z0-9.~_-]) encoded+="$char" ;;
+            *) encoded+="$(printf '%%%02X' "'$char")" ;;
+        esac
+    done
+    echo "$encoded"
+}
+
 is_output_file_missing() {
     if [ -f "$1" ]; then
         echo "" > "$1"
@@ -38,13 +51,16 @@ write_links() {
             # Skip empty lines
             [ -z "$line" ] && continue
             
+            # URL encode the search term
+            encoded_line=$(urlencode "$line")
+            
             local dork_url
             if [ "$dork_type" == "github" ]; then
-                dork_url="${GITHUB[start]}${line}%22+org:${org_name}${GITHUB[end]}"
+                dork_url="${GITHUB[start]}${encoded_line}%22+org:${org_name}${GITHUB[end]}"
             elif [ "$dork_type" == "google" ]; then
-                dork_url="${GOOGLE[start]}${line}%22+site:${org_name}${GOOGLE[end]}"
+                dork_url="${GOOGLE[start]}${encoded_line}%22+site:${org_name}${GOOGLE[end]}"
             elif [ "$dork_type" == "shodan" ]; then
-                dork_url="${SHODAN[start]}${line}+hostname:\"${org_name}\"${SHODAN[end]}"
+                dork_url="${SHODAN[start]}${encoded_line}+hostname:\"${org_name}\"${SHODAN[end]}"
             fi
             
             echo "$dork_url" >> "$output_file"
