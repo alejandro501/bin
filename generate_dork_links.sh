@@ -161,7 +161,6 @@ main() {
         done < "$org_name"
     else
         # Generate links for a single organization
-        echo "Generating links for organization: $org_name"
         write_links "$wordlist_github" "$output_github" "github" "$org_name"
         write_links "$wordlist_google" "$output_google" "google" "$org_name"
         write_links "$wordlist_shodan" "$output_shodan" "shodan" "$org_name"
