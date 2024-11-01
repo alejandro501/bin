@@ -12,8 +12,6 @@ WORDLIST_GITHUB_DEFAULT=~/hack/resources/wordlists/dorking/dorking-github.txt
 WORDLIST_GOOGLE_DEFAULT=~/hack/resources/wordlists/dorking/dorking-google.txt
 WORDLIST_API_GITHUB_DEFAULT=~/hack/resources/wordlists/dorking/api-dorking-github.txt
 WORDLIST_API_GOOGLE_DEFAULT=~/hack/resources/wordlists/dorking/api-dorking-google.txt
-
-# Default Shodan wordlists
 WORDLIST_SHODAN_DEFAULT=~/hack/resources/wordlists/dorking/shodan.txt
 WORDLIST_API_SHODAN_DEFAULT=~/hack/resources/wordlists/dorking/api-shodan.txt
 
@@ -115,7 +113,6 @@ main() {
         shift
     done
 
-    # Ensure either an organization or a list is provided
     if [ -z "$org_name" ]; then
         echo "Error: No organization or list provided."
         usage
