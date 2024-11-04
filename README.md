@@ -25,8 +25,6 @@ Usage: ./enumerate_subdomains.sh [OPTIONS] -I <input_file>
 
 ## generate dork links
 ```sh
-Usage: /usr/bin/generate_dork_links [OPTIONS]
-
     Input Feed:
     -oR,  --organization <org>      Specify a single organization.
     -L,   --list <file>             Specify a file with a list of organizations.
@@ -35,16 +33,22 @@ Usage: /usr/bin/generate_dork_links [OPTIONS]
     -O,   --output <word>           Prepend a word to the output filenames.
     -oGh, --output-github <file>    Specify output file for GitHub links.
     -oGg, --output-google <file>    Specify output file for Google links.
+    -oSh, --output-shodan <file>    Specify output file for Shodan links.
+    -oWb, --output-wayback <file>   Specify output file for Wayback links.
 
     Dorking types:
     -gH,  --github                  Generate GitHub dork links.
     -gG,  --google                  Generate Google dork links.
-    -A,   --all                     Generate both GitHub and Google dork links.
+    -gS,  --shodan                  Generate Shodan links.
+    -gW,  --wayback                 Generate Wayback Machine links.
+    -A,   --all                     Generate all dork links.
     -aP,  --api                     Use API-specific wordlists.
 
     Custom Wordlist:
     -wGh, --wordlist-github <file>  Specify GitHub wordlist file.
     -wGg, --wordlist-google <file>  Specify Google wordlist file.
+    -wSh, --wordlist-shodan <file>  Specify Shodan wordlist file.
+    -wWb, --wordlist-wayback <file>  Specify Wayback wordlist file.
 
     Help:
     -H,   --help                    Display this help message.
