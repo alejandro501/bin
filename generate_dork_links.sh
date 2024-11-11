@@ -26,11 +26,11 @@ mkdir -p "$DORKING"
 urlencode() {
     local input="$1"
     local encoded=""
-    for ((i=0; i<${#input}; i++)); do
+    for ((i = 0; i < ${#input}; i++)); do
         char="${input:$i:1}"
         case "$char" in
-            [a-zA-Z0-9.~_-]) encoded+="$char" ;;
-            *) encoded+="$(printf '%%%02X' "'$char")" ;;
+        [a-zA-Z0-9.~_-]) encoded+="$char" ;;
+        *) encoded+="$(printf '%%%02X' "'$char")" ;;
         esac
     done
     echo "$encoded"
@@ -38,7 +38,7 @@ urlencode() {
 
 is_output_file_missing() {
     if [ -f "$1" ]; then
-        echo "" > "$1"
+        echo "" >"$1"
         return 1
     else
         return 0
@@ -56,10 +56,10 @@ write_links() {
         while read -r line || [[ -n "$line" ]]; do
             # Skip empty lines
             [ -z "$line" ] && continue
-            
+
             # URL encode the search term
             encoded_line=$(urlencode "$line")
-            
+
             local dork_url
             if [ "$dork_type" == "github" ]; then
                 dork_url="${GITHUB[start]}${encoded_line}%22+org:${org_name}${GITHUB[end]}"
@@ -68,11 +68,13 @@ write_links() {
             elif [ "$dork_type" == "shodan" ]; then
                 dork_url="${SHODAN[start]}${encoded_line}+hostname:\"${org_name}\"${SHODAN[end]}"
             elif [ "$dork_type" == "wayback" ]; then
-                dork_url="${WAYBACK[start]}${encoded_line}${WAYBACK[end]}"
+                # Focus on organization and relevant data
+                # Adjusting the query to make Wayback search specific to the target domain
+                dork_url="${WAYBACK[start]}${org_name}%20${encoded_line}${WAYBACK[end]}"
             fi
-            
-            echo "$dork_url" >> "$output_file"
-        done < "$wordlist_file"
+
+            echo "$dork_url" >>"$output_file"
+        done <"$wordlist_file"
     fi
 }
 
@@ -110,7 +112,7 @@ usage() {
 }
 
 main() {
-    local dork_type="all"  # Default to generating all dork types
+    local dork_type="all" # Default to generating all dork types
     local wordlist_github="$WORDLIST_GITHUB_DEFAULT"
     local wordlist_google="$WORDLIST_GOOGLE_DEFAULT"
     local wordlist_shodan="$WORDLIST_SHODAN_DEFAULT"
@@ -121,25 +123,65 @@ main() {
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
-            -gH|--github)  dork_type="github" ;;
-            -gG|--google)  dork_type="google" ;;
-            -gS|--shodan)  dork_type="shodan" ;;
-            -gW|--wayback) dork_type="wayback" ;;
-            -A|--all)      dork_type="all" ;;
-            -aP|--api) use_api_wordlists=true ;;
-            -wGh|--wordlist-github) wordlist_github="$2"; shift ;;
-            -wGg|--wordlist-google) wordlist_google="$2"; shift ;;
-            -wSh|--wordlist-shodan) wordlist_shodan="$2"; shift ;;
-            -wWb|--wordlist-wayback) wordlist_wayback="$2"; shift ;;
-            -oGh|--output-github) output_github="$2"; shift ;;
-            -oGg|--output-google) output_google="$2"; shift ;;
-            -oSh|--output-shodan) output_shodan="$2"; shift ;;
-            -oWb|--output-wayback) output_wayback="$2"; shift ;;
-            -O|--output) output_prefix="$2"; shift ;;
-            -oR|--organization) org_name="$2"; shift ;;
-            -L|--list) org_name="$2"; shift ;;
-            -H|--help) usage; exit 0 ;;
-            *) echo "Error: Unrecognized option $1"; usage; exit 1 ;;
+        -gH | --github) dork_type="github" ;;
+        -gG | --google) dork_type="google" ;;
+        -gS | --shodan) dork_type="shodan" ;;
+        -gW | --wayback) dork_type="wayback" ;;
+        -A | --all) dork_type="all" ;;
+        -aP | --api) use_api_wordlists=true ;;
+        -wGh | --wordlist-github)
+            wordlist_github="$2"
+            shift
+            ;;
+        -wGg | --wordlist-google)
+            wordlist_google="$2"
+            shift
+            ;;
+        -wSh | --wordlist-shodan)
+            wordlist_shodan="$2"
+            shift
+            ;;
+        -wWb | --wordlist-wayback)
+            wordlist_wayback="$2"
+            shift
+            ;;
+        -oGh | --output-github)
+            output_github="$2"
+            shift
+            ;;
+        -oGg | --output-google)
+            output_google="$2"
+            shift
+            ;;
+        -oSh | --output-shodan)
+            output_shodan="$2"
+            shift
+            ;;
+        -oWb | --output-wayback)
+            output_wayback="$2"
+            shift
+            ;;
+        -O | --output)
+            output_prefix="$2"
+            shift
+            ;;
+        -oR | --organization)
+            org_name="$2"
+            shift
+            ;;
+        -L | --list)
+            org_name="$2"
+            shift
+            ;;
+        -H | --help)
+            usage
+            exit 0
+            ;;
+        *)
+            echo "Error: Unrecognized option $1"
+            usage
+            exit 1
+            ;;
         esac
         shift
     done
@@ -194,7 +236,7 @@ main() {
                 write_links "$wordlist_wayback" "$DORKING/${org}_wayback_links.txt" "wayback" "$org"
             fi
 
-        done < "$org_name"
+        done <"$org_name"
     else
         # Generate links for a single organization
         write_links "$wordlist_github" "$output_github" "github" "$org_name"
