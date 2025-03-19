@@ -38,7 +38,6 @@ urlencode() {
 
 is_output_file_missing() {
     if [ -f "$1" ]; then
-        echo "" >"$1"
         return 1
     else
         return 0
@@ -247,3 +246,4 @@ main() {
 }
 
 main "$@"
+
