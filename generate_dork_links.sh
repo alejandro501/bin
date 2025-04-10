@@ -59,21 +59,22 @@ write_links() {
             # URL encode the search term
             encoded_line=$(urlencode "$line")
 
-            local dork_url
             if [ "$dork_type" == "github" ]; then
-                dork_url="${GITHUB[start]}${encoded_line}%22+org:${org_name}${GITHUB[end]}"
-                dork_url="${GITHUB[start]}${encoded_line}%22+in:url%22${org_name}${GITHUB[end]}"
+                # Generate BOTH versions (org and in:url)
+                org_url="${GITHUB[start]}${encoded_line}%22+org:${org_name}${GITHUB[end]}"
+                inurl_url="${GITHUB[start]}${encoded_line}%22+in:url%22${org_name}${GITHUB[end]}"
+                echo "$org_url" >>"$output_file"
+                echo "$inurl_url" >>"$output_file"
             elif [ "$dork_type" == "google" ]; then
                 dork_url="${GOOGLE[start]}${encoded_line}%22+site:${org_name}${GOOGLE[end]}"
+                echo "$dork_url" >>"$output_file"
             elif [ "$dork_type" == "shodan" ]; then
                 dork_url="${SHODAN[start]}${encoded_line}+hostname:\"${org_name}\"${SHODAN[end]}"
+                echo "$dork_url" >>"$output_file"
             elif [ "$dork_type" == "wayback" ]; then
-                # Focus on organization and relevant data
-                # Adjusting the query to make Wayback search specific to the target domain
                 dork_url="${WAYBACK[start]}${org_name}%20${encoded_line}${WAYBACK[end]}"
+                echo "$dork_url" >>"$output_file"
             fi
-
-            echo "$dork_url" >>"$output_file"
         done <"$wordlist_file"
     fi
 }
@@ -170,7 +171,7 @@ main() {
             shift
             ;;
         -L | --list)
-            org_name="$2"
+            org_list_file="$2"
             shift
             ;;
         -H | --help)
@@ -186,7 +187,8 @@ main() {
         shift
     done
 
-    if [ -z "$org_name" ]; then
+    # Validate input
+    if [ -z "$org_name" ] && [ -z "$org_list_file" ]; then
         echo "Error: No organization or list provided."
         usage
         exit 1
@@ -200,49 +202,53 @@ main() {
         wordlist_wayback="$WORDLIST_API_WAYBACK_DEFAULT"
     fi
 
-    # Determine output filenames based on organization name or prefix
-    if [ -n "$output_prefix" ]; then
-        output_github="$DORKING/${output_prefix}_${org_name}_github_dork_links.txt"
-        output_google="$DORKING/${output_prefix}_${org_name}_google_dork_links.txt"
-        output_shodan="$DORKING/${output_prefix}_${org_name}_shodan_links.txt"
-        output_wayback="$DORKING/${output_prefix}_${org_name}_wayback_links.txt"
-    else
-        output_github="$DORKING/${org_name}_github_dork_links.txt"
-        output_google="$DORKING/${org_name}_google_dork_links.txt"
-        output_shodan="$DORKING/${org_name}_shodan_links.txt"
-        output_wayback="$DORKING/${org_name}_wayback_links.txt"
-    fi
+    # Function to process a single organization
+    process_organization() {
+        local org="$1"
+        
+        # Determine output filenames
+        if [ -n "$output_prefix" ]; then
+            local org_output_github="$DORKING/${output_prefix}_${org}_github_dork_links.txt"
+            local org_output_google="$DORKING/${output_prefix}_${org}_google_dork_links.txt"
+            local org_output_shodan="$DORKING/${output_prefix}_${org}_shodan_links.txt"
+            local org_output_wayback="$DORKING/${output_prefix}_${org}_wayback_links.txt"
+        else
+            local org_output_github="$DORKING/${org}_github_dork_links.txt"
+            local org_output_google="$DORKING/${org}_google_dork_links.txt"
+            local org_output_shodan="$DORKING/${org}_shodan_links.txt"
+            local org_output_wayback="$DORKING/${org}_wayback_links.txt"
+        fi
 
-    # Check if org_name is a file or a single organization
-    if [[ -f "$org_name" ]]; then
+        case "$dork_type" in
+            "all")
+                [ -f "$wordlist_github" ] && write_links "$wordlist_github" "$org_output_github" "github" "$org"
+                [ -f "$wordlist_google" ] && write_links "$wordlist_google" "$org_output_google" "google" "$org"
+                [ -f "$wordlist_shodan" ] && write_links "$wordlist_shodan" "$org_output_shodan" "shodan" "$org"
+                [ -f "$wordlist_wayback" ] && write_links "$wordlist_wayback" "$org_output_wayback" "wayback" "$org"
+                ;;
+            "github")
+                [ -f "$wordlist_github" ] && write_links "$wordlist_github" "$org_output_github" "github" "$org"
+                ;;
+            "google")
+                [ -f "$wordlist_google" ] && write_links "$wordlist_google" "$org_output_google" "google" "$org"
+                ;;
+            "shodan")
+                [ -f "$wordlist_shodan" ] && write_links "$wordlist_shodan" "$org_output_shodan" "shodan" "$org"
+                ;;
+            "wayback")
+                [ -f "$wordlist_wayback" ] && write_links "$wordlist_wayback" "$org_output_wayback" "wayback" "$org"
+                ;;
+        esac
+    }
+
+    # Process either single organization or list file
+    if [ -n "$org_list_file" ] && [ -f "$org_list_file" ]; then
         while read -r org || [[ -n "$org" ]]; do
-            # GitHub Links
-            if [[ -f "$wordlist_github" ]]; then
-                write_links "$wordlist_github" "$DORKING/${org}_github_dork_links.txt" "github" "$org"
-            fi
-
-            # Google Links
-            if [[ -f "$wordlist_google" ]]; then
-                write_links "$wordlist_google" "$DORKING/${org}_google_dork_links.txt" "google" "$org"
-            fi
-
-            # Shodan Links
-            if [[ -f "$wordlist_shodan" ]]; then
-                write_links "$wordlist_shodan" "$DORKING/${org}_shodan_links.txt" "shodan" "$org"
-            fi
-
-            # Wayback Links
-            if [[ -f "$wordlist_wayback" ]]; then
-                write_links "$wordlist_wayback" "$DORKING/${org}_wayback_links.txt" "wayback" "$org"
-            fi
-
-        done <"$org_name"
+            [ -z "$org" ] && continue  # Skip empty lines
+            process_organization "$org"
+        done < "$org_list_file"
     else
-        # Generate links for a single organization
-        write_links "$wordlist_github" "$output_github" "github" "$org_name"
-        write_links "$wordlist_google" "$output_google" "google" "$org_name"
-        write_links "$wordlist_shodan" "$output_shodan" "shodan" "$org_name"
-        write_links "$wordlist_wayback" "$output_wayback" "wayback" "$org_name"
+        process_organization "$org_name"
     fi
 }
 
