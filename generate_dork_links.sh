@@ -62,6 +62,7 @@ write_links() {
             local dork_url
             if [ "$dork_type" == "github" ]; then
                 dork_url="${GITHUB[start]}${encoded_line}%22+org:${org_name}${GITHUB[end]}"
+                dork_url="${GITHUB[start]}${encoded_line}%22+in:url%22${org_name}${GITHUB[end]}"
             elif [ "$dork_type" == "google" ]; then
                 dork_url="${GOOGLE[start]}${encoded_line}%22+site:${org_name}${GOOGLE[end]}"
             elif [ "$dork_type" == "shodan" ]; then
