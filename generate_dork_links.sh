@@ -60,11 +60,8 @@ write_links() {
             encoded_line=$(urlencode "$line")
 
             if [ "$dork_type" == "github" ]; then
-                # Generate BOTH versions (org and in:url)
-                org_url="${GITHUB[start]}${encoded_line}%22+org:${org_name}${GITHUB[end]}"
-                inurl_url="${GITHUB[start]}${encoded_line}%22+%22${org_name}%22${GITHUB[end]}"
-                echo "$org_url" >>"$output_file"
-                echo "$inurl_url" >>"$output_file"
+                dork_url="${GITHUB[start]}${encoded_line}%22+%22${org_name}%22${GITHUB[end]}"
+                echo "$dork_url" >>"$output_file"
             elif [ "$dork_type" == "google" ]; then
                 dork_url="${GOOGLE[start]}${encoded_line}%22+site:${org_name}${GOOGLE[end]}"
                 echo "$dork_url" >>"$output_file"
